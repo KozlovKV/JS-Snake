@@ -178,6 +178,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Snake)
 /* harmony export */ });
+/* harmony import */ var _touchController__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./touchController */ "./js/modules/touchController.js");
+
+
+
 class Snake {
     constructor(engine) {
         this.engine = engine;
@@ -189,6 +193,7 @@ class Snake {
         this.dy = 0;
         this._changePatterns = {};
         this.setChangePatterns();
+        this.touchController = new _touchController__WEBPACK_IMPORTED_MODULE_0__["default"](this, document.getElementById('touch_controller'));
         this.setEvents();
         this.changeVelocity('right');
     }
@@ -269,40 +274,7 @@ class Snake {
         document.addEventListener('keydown', (e) => {
             this.processKeyDownEvent(e);
         });
-
-        let controller = document.getElementById('touch_controller');
-        let start, end;
-        this.engine.canvas.addEventListener('touchstart', (e) => {
-            let controller = document.getElementById('touch_controller');
-            let touch = e.changedTouches[0];
-            controller.classList.remove('hide__right');
-            controller.style.left = touch.clientX + 'px';
-            controller.style.top = touch.clientY + 'px';
-            start = [e.changedTouches[0].clientX, e.changedTouches[0].clientY];
-        });
-        let endTouchCallBack = (e) => {
-            let controller = document.getElementById('touch_controller');
-            end = [e.changedTouches[0].clientX, e.changedTouches[0].clientY];
-            let vec = {
-                x: end[0] - start[0],
-                y: -(end[1] - start[1]),
-            };
-            vec.len = Math.sqrt(vec.x ** 2 + vec.y ** 2);
-            vec.sin = vec.y / vec.len;
-            vec.cos = vec.x / vec.len;
-            if (Math.abs(vec.sin) > Math.abs(vec.cos)) {
-                if (vec.sin > 0) { this.changeVelocity('up'); }
-                else { this.changeVelocity('down'); }
-            } else {
-                if (vec.cos > 0) { this.changeVelocity('right'); }
-                else { this.changeVelocity('left'); }
-            }
-            controller.classList.add('hide__right');
-        };
-        this.engine.canvas.addEventListener('touchend', endTouchCallBack);
-        controller.addEventListener('touchend', endTouchCallBack);
-
-        
+        this.touchController.setEvents();
     }
 
     changeVelocity(direction) {
@@ -319,6 +291,66 @@ class Snake {
         if (Object.entries(keysToDirectionDict).some(pair => pair[0] == event.key)) {
             this.changeVelocity(keysToDirectionDict[event.key]);
         }
+    }
+}
+
+/***/ }),
+
+/***/ "./js/modules/touchController.js":
+/*!***************************************!*\
+  !*** ./js/modules/touchController.js ***!
+  \***************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ TouchController)
+/* harmony export */ });
+class TouchController {
+    constructor(snake, controllerElement) {
+        this.snake = snake;
+        this.field = this.snake.engine.canvas;
+        this.controller = controllerElement;
+        this.startPoint = this.endPoint = 0;
+    }
+
+    startTouchCallBack(e) {
+        e.preventDefault();
+        let touch = e.changedTouches[0];
+        this.controller.classList.remove('hide');
+        this.controller.style.left = touch.clientX + 'px';
+        this.controller.style.top = touch.clientY + 'px';
+        this.startPoint = [e.changedTouches[0].clientX, e.changedTouches[0].clientY];
+    }
+
+    countVectorParams() {
+        this.vec = {
+            x: this.endPoint[0] - this.startPoint[0],
+            y: -(this.endPoint[1] - this.startPoint[1]),
+        };
+        this.vec.len = Math.sqrt(this.vec.x ** 2 + this.vec.y ** 2);
+        this.vec.sin = this.vec.y / this.vec.len;
+        this.vec.cos = this.vec.x / this.vec.len;
+    }
+
+    endTouchCallBack(e) {
+        e.preventDefault();
+        this.endPoint = [e.changedTouches[0].clientX, e.changedTouches[0].clientY];
+        this.countVectorParams();
+        if (Math.abs(this.vec.sin) > Math.abs(this.vec.cos)) {
+            if (this.vec.sin > 0) { this.snake.changeVelocity('up'); }
+            else { this.snake.changeVelocity('down'); }
+        } else {
+            if (this.vec.cos > 0) { this.snake.changeVelocity('right'); }
+            else { this.snake.changeVelocity('left'); }
+        }
+        this.controller.classList.add('hide');
+    }
+
+    setEvents() {
+        this.field.addEventListener('touchstart', e => this.startTouchCallBack(e));
+        this.field.addEventListener('touchend', e => this.endTouchCallBack(e));
+        this.controller.addEventListener('touchend', e => this.endTouchCallBack(e));
     }
 }
 
