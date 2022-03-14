@@ -1,0 +1,119 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    color: aliceblue;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+}
+
+body {
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.container {
+    width: 90%;
+}
+
+.container * {
+    width: 100%;
+}
+
+#highscores {
+    border: 2px solid white;
+    background-color: black;
+    padding: 0 0 0 5%;
+}
+#highscores li {
+    font-size: 2rem;
+}
+
+#username {
+    background-color: black;
+    border: 2px solid white;
+    padding: 2px;
+    color: aliceblue;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    font-size: 3rem;
+}
+
+canvas {
+    border: 2px solid white;
+    width: 100%;
+}
+
+.hide {
+    display: none;
+}
+
+.hide__right {
+    right: -1000px;
+}
+
+.show {
+    display: block;
+}
+
+#touch_controller {
+    /* z-index: -1; */
+    display: block;
+    position: absolute;
+    border: 2px solid white;
+    background-image: url(./img/vector_controller_bg.webp);
+    background-size: cover;
+    border-radius: 50%;
+    width: 250px;
+    height: 250px;
+    transform: translate(-50%, -50%);
+}
+
+.controller__arrow {
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    background-image: url('./img/arrow-up.png') ;
+}
+
+.controller__arrow.vertical {
+    left: calc(50% - 32px);
+}
+
+.controller__arrow.horizontal {
+    top: calc(50% - 32px);
+}
+
+.controller__arrow#top {
+    top: 0;
+}
+
+.controller__arrow#right {
+    right: 0;
+    transform: rotate(90deg);
+}
+
+.controller__arrow#bottom {
+    bottom: 0;
+    transform: rotate(180deg);
+}
+
+.controller__arrow#left {
+    left: 0;
+    transform: rotate(270deg);
+}
+
+@media (min-width: 1024px) {
+    .container {
+        width: 30%;
+    }
+
+    #username {
+        font-size: 1.5rem;
+    }
+}
+
+
+

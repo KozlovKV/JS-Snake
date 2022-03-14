@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Змейка</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+  <div id="current_data" class="container">
+    <input id='username' name="username" placeholder="Никнейм" type="text" maxlength="20">
+    <h1>Счёт: <span id="score"></span></h1>
+    <h1>FPS: <span id="fps"></span></h1>
+  </div>
+  <div id="touch_controller" class="hide__right">
+    <!-- <div id="top" class="controller__arrow vertical hide"></div>
+    <div id="right" class="controller__arrow horizontal hide"></div>
+    <div id="bottom" class="controller__arrow vertical hide"></div>
+    <div id="left" class="controller__arrow horizontal hide"></div> -->
+  </div>
+  <div id="game_window" class="container">
+    <canvas width="400" height="400" id="game"></canvas>
+  </div>
+  <div id="highscores" class="container hide">
+    <h1>Таблица рекордов</h1>
+    <ol>
+    </ol>
+  </div>
+
+  <script defer src="./js/bundle.js"></script>
+</body>
+</html>
