@@ -1,3 +1,6 @@
+import TouchController from "./touchController";
+
+
 export default class Snake {
     constructor(engine) {
         this.engine = engine;
@@ -9,6 +12,7 @@ export default class Snake {
         this.dy = 0;
         this._changePatterns = {};
         this.setChangePatterns();
+        this.touchController = new TouchController(this, document.getElementById('touch_controller'));
         this.setEvents();
         this.changeVelocity('right');
     }
@@ -89,40 +93,7 @@ export default class Snake {
         document.addEventListener('keydown', (e) => {
             this.processKeyDownEvent(e);
         });
-
-        let controller = document.getElementById('touch_controller');
-        let start, end;
-        this.engine.canvas.addEventListener('touchstart', (e) => {
-            let controller = document.getElementById('touch_controller');
-            let touch = e.changedTouches[0];
-            controller.classList.remove('hide__right');
-            controller.style.left = touch.clientX + 'px';
-            controller.style.top = touch.clientY + 'px';
-            start = [e.changedTouches[0].clientX, e.changedTouches[0].clientY];
-        });
-        let endTouchCallBack = (e) => {
-            let controller = document.getElementById('touch_controller');
-            end = [e.changedTouches[0].clientX, e.changedTouches[0].clientY];
-            let vec = {
-                x: end[0] - start[0],
-                y: -(end[1] - start[1]),
-            };
-            vec.len = Math.sqrt(vec.x ** 2 + vec.y ** 2);
-            vec.sin = vec.y / vec.len;
-            vec.cos = vec.x / vec.len;
-            if (Math.abs(vec.sin) > Math.abs(vec.cos)) {
-                if (vec.sin > 0) { this.changeVelocity('up'); }
-                else { this.changeVelocity('down'); }
-            } else {
-                if (vec.cos > 0) { this.changeVelocity('right'); }
-                else { this.changeVelocity('left'); }
-            }
-            controller.classList.add('hide__right');
-        };
-        this.engine.canvas.addEventListener('touchend', endTouchCallBack);
-        controller.addEventListener('touchend', endTouchCallBack);
-
-        
+        this.touchController.setEvents();
     }
 
     changeVelocity(direction) {

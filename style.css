@@ -14,6 +14,10 @@ body {
     flex-wrap: wrap;
 }
 
+h1 {
+    margin: 15px;
+}
+
 .container {
     width: 90%;
 }
@@ -25,7 +29,7 @@ body {
 #highscores {
     border: 2px solid white;
     background-color: black;
-    padding: 0 0 0 5%;
+    overflow: hidden;
 }
 #highscores li {
     font-size: 2rem;
@@ -59,8 +63,6 @@ canvas {
 }
 
 #touch_controller {
-    /* z-index: -1; */
-    display: block;
     position: absolute;
     border: 2px solid white;
     background-image: url(./img/vector_controller_bg.webp);
