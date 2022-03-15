@@ -29,8 +29,6 @@ class GameEngine {
         this.context = this.canvas.getContext('2d');
         this.grid = 16;
 
-        
-
         this.snake = new _snake__WEBPACK_IMPORTED_MODULE_0__["default"](this);
         this.apple = new _apple__WEBPACK_IMPORTED_MODULE_1__["default"](this);
         this.recordsDB = new _RecordTableDB__WEBPACK_IMPORTED_MODULE_2__["default"]('http://localhost:3000/records');
@@ -44,24 +42,26 @@ class GameEngine {
         this.updateHighscoresTable();
     }
 
-    loop() {
+    logic() {
+        this.snake.logic();
+        this.apple.logic();
+        this.score = this.snake.cells.length;
+    }
+
+    draw() {
         // Очищаем игровое поле
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Рисуем еду — красное яблоко
-        this.context.fillStyle = 'red';
-        this.context.fillRect(this.apple.x, this.apple.y, this.grid-1, this.grid-1);
+        this.snake.draw();
+        this.apple.draw();
 
-        // Одно движение змейки — один новый нарисованный квадратик 
-        this.context.fillStyle = 'green';
-
-        // Обрабатываем каждый элемент змейки
-        this.snake.move();
-
-        this.score = this.snake.cells.length;
         document.getElementById('score').innerText = this.score;
         document.getElementById('fps').innerText = this.fps;
-        
+    }
+
+    loop() {
+        this.logic();
+        this.draw();
         this.timerId = setTimeout(() => this.loop(), 1000/this.fps);
     }
 
@@ -160,6 +160,18 @@ class Apple {
         this.x = getRandomInt(0, 25) * this.engine.grid;
         this.y = getRandomInt(0, 25) * this.engine.grid;
     }
+
+    logic() {
+        if (this.engine.snake.x === this.x && this.engine.snake.y === this.y) {
+            this.engine.snake.grow();
+            this.updatePos();
+        }
+    }
+
+    draw() {
+        this.engine.context.fillStyle = 'red';
+        this.engine.context.fillRect(this.x, this.y, this.engine.grid-1, this.engine.grid-1);
+    }
 }
 
 function getRandomInt(min, max) {
@@ -215,6 +227,8 @@ class Snake {
         };
     }
 
+    grow() { this.maxCells++; }
+
     move() {
         // Двигаем змейку с нужной скоростью
         this.x += this.dx;
@@ -235,7 +249,9 @@ class Snake {
         else if (this.y >= this.engine.canvas.height) {
             this.y = 0;
         }
+    }
 
+    processCells() {
         // Продолжаем двигаться в выбранном направлении. 
         // Голова всегда впереди, поэтому добавляем её координаты в начало массива, 
         // который отвечает за всю змейку
@@ -246,18 +262,10 @@ class Snake {
         if (this.cells.length > this.maxCells) {
             this.cells.pop();
         }
+    }
 
+    checkGameOver() {
         this.cells.forEach((cell, index) => {
-            // Чтобы создать эффект клеточек, делаем зелёные квадратики меньше на один пиксель, 
-            // чтобы вокруг них образовалась чёрная граница
-            this.engine.context.fillRect(cell.x, cell.y, this.engine.grid-1, this.engine.grid-1);  
-            // Если змейка добралась до яблока...
-            if (cell.x === this.engine.apple.x && cell.y === this.engine.apple.y) {
-                // увеличиваем длину змейки
-                this.maxCells++;
-                this.engine.apple.updatePos();
-            }
-    
             // Проверяем, не столкнулась ли змея сама с собой
             // Для этого перебираем весь массив и смотрим, 
             // есть ли у нас в массиве змейки две клетки с одинаковыми координатами 
@@ -267,6 +275,19 @@ class Snake {
                     this.engine.restart();
                 }
             }
+        });
+    }
+
+    logic() {
+        this.move();
+        this.processCells();
+        this.checkGameOver();
+    }
+
+    draw() {
+        this.engine.context.fillStyle = 'green';
+        this.cells.forEach(cell => {
+            this.engine.context.fillRect(cell.x, cell.y, this.engine.grid-1, this.engine.grid-1);
         });
     }
 

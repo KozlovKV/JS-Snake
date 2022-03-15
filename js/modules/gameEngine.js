@@ -12,8 +12,6 @@ export default class GameEngine {
         this.context = this.canvas.getContext('2d');
         this.grid = 16;
 
-        
-
         this.snake = new Snake(this);
         this.apple = new Apple(this);
         this.recordsDB = new RecordTableDB('http://localhost:3000/records');
@@ -27,24 +25,26 @@ export default class GameEngine {
         this.updateHighscoresTable();
     }
 
-    loop() {
+    logic() {
+        this.snake.logic();
+        this.apple.logic();
+        this.score = this.snake.cells.length;
+    }
+
+    draw() {
         // Очищаем игровое поле
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Рисуем еду — красное яблоко
-        this.context.fillStyle = 'red';
-        this.context.fillRect(this.apple.x, this.apple.y, this.grid-1, this.grid-1);
+        this.snake.draw();
+        this.apple.draw();
 
-        // Одно движение змейки — один новый нарисованный квадратик 
-        this.context.fillStyle = 'green';
-
-        // Обрабатываем каждый элемент змейки
-        this.snake.move();
-
-        this.score = this.snake.cells.length;
         document.getElementById('score').innerText = this.score;
         document.getElementById('fps').innerText = this.fps;
-        
+    }
+
+    loop() {
+        this.logic();
+        this.draw();
         this.timerId = setTimeout(() => this.loop(), 1000/this.fps);
     }
 
