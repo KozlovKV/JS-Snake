@@ -49,7 +49,7 @@ export default class GameEngine {
     }
 
     updateHighscoresTable() {
-        let highscoreListElement = document.querySelector('#highscores ol');
+        let highscoreListElement = document.querySelector('#highscores ul');
         highscoreListElement.innerHTML = '';
         this.highscores.forEach(recordObject => {
             let recordElement = document.createElement('li');
