@@ -34,6 +34,8 @@ export default class Snake {
         };
     }
 
+    grow() { this.maxCells++; }
+
     move() {
         // Двигаем змейку с нужной скоростью
         this.x += this.dx;
@@ -54,7 +56,9 @@ export default class Snake {
         else if (this.y >= this.engine.canvas.height) {
             this.y = 0;
         }
+    }
 
+    processCells() {
         // Продолжаем двигаться в выбранном направлении. 
         // Голова всегда впереди, поэтому добавляем её координаты в начало массива, 
         // который отвечает за всю змейку
@@ -65,18 +69,10 @@ export default class Snake {
         if (this.cells.length > this.maxCells) {
             this.cells.pop();
         }
+    }
 
+    checkGameOver() {
         this.cells.forEach((cell, index) => {
-            // Чтобы создать эффект клеточек, делаем зелёные квадратики меньше на один пиксель, 
-            // чтобы вокруг них образовалась чёрная граница
-            this.engine.context.fillRect(cell.x, cell.y, this.engine.grid-1, this.engine.grid-1);  
-            // Если змейка добралась до яблока...
-            if (cell.x === this.engine.apple.x && cell.y === this.engine.apple.y) {
-                // увеличиваем длину змейки
-                this.maxCells++;
-                this.engine.apple.updatePos();
-            }
-    
             // Проверяем, не столкнулась ли змея сама с собой
             // Для этого перебираем весь массив и смотрим, 
             // есть ли у нас в массиве змейки две клетки с одинаковыми координатами 
@@ -86,6 +82,19 @@ export default class Snake {
                     this.engine.restart();
                 }
             }
+        });
+    }
+
+    logic() {
+        this.move();
+        this.processCells();
+        this.checkGameOver();
+    }
+
+    draw() {
+        this.engine.context.fillStyle = 'green';
+        this.cells.forEach(cell => {
+            this.engine.context.fillRect(cell.x, cell.y, this.engine.grid-1, this.engine.grid-1);
         });
     }
 
