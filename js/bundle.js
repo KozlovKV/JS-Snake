@@ -150,19 +150,24 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Apple)
 /* harmony export */ });
+/* harmony import */ var _point__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./point */ "./js/modules/point.js");
+
+
 class Apple {
     constructor(engine) { 
         this.engine = engine;
+        this.point = new _point__WEBPACK_IMPORTED_MODULE_0__["default"]();
         this.updatePos();
     }
 
     updatePos() {
-        this.x = getRandomInt(0, 25) * this.engine.grid;
-        this.y = getRandomInt(0, 25) * this.engine.grid;
+        let x = getRandomInt(0, 25) * this.engine.grid,
+            y = getRandomInt(0, 25) * this.engine.grid;
+        this.point.set(x, y);
     }
 
     logic() {
-        if (this.engine.snake.x === this.x && this.engine.snake.y === this.y) {
+        if (this.point.compare(this.engine.snake.headPoint)) {
             this.engine.snake.grow();
             this.updatePos();
         }
@@ -170,12 +175,66 @@ class Apple {
 
     draw() {
         this.engine.context.fillStyle = 'red';
-        this.engine.context.fillRect(this.x, this.y, this.engine.grid-1, this.engine.grid-1);
+        this.engine.context.fillRect(this.point.x, this.point.y, this.engine.grid-1, this.engine.grid-1);
     }
 }
 
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
+}
+
+/***/ }),
+
+/***/ "./js/modules/point.js":
+/*!*****************************!*\
+  !*** ./js/modules/point.js ***!
+  \*****************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ MultidemensionPoint)
+/* harmony export */ });
+class MultidemensionPoint {
+    constructor(...coordinats) {
+        this.set(...coordinats);
+    }
+
+    get x() {
+        return this.coordinats[0];
+    }
+
+    set x(value) {
+        this.coordinats[0] = value;
+    }
+
+    get y() {
+        return this.coordinats[1];
+    }
+
+    set y(value) {
+        this.coordinats[1] = value;
+    }
+
+    set(...coordinats) {
+        this.demensions = coordinats.length;
+        this.coordinats = coordinats;
+    }
+
+    change(...coordinats) {
+        if (coordinats.length == this.demensions) {
+            this.coordinats = coordinats.map((coord, i) => this.coordinats[i] + coord);
+        }
+    }
+
+    copy() {
+        return new MultidemensionPoint(...this.coordinats);
+    }
+
+    compare(otherPoint) {
+        if (this.demensions != otherPoint.demensions) { return false; }
+        return otherPoint.coordinats.every((coord, i) => coord === this.coordinats[i]);
+    }
 }
 
 /***/ }),
@@ -191,18 +250,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (/* binding */ Snake)
 /* harmony export */ });
 /* harmony import */ var _touchController__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./touchController */ "./js/modules/touchController.js");
+/* harmony import */ var _point__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./point */ "./js/modules/point.js");
 
 
 
 class Snake {
     constructor(engine) {
         this.engine = engine;
-        this.x = 160;
-        this.y = 160;
+        this.headPoint = new _point__WEBPACK_IMPORTED_MODULE_1__["default"](160, 160);
         this.cells = [];
         this.maxCells = 4;
-        this.dx = 0;
-        this.dy = 0;
+        this.vector = new _point__WEBPACK_IMPORTED_MODULE_1__["default"](0, 0);
         this._changePatterns = {};
         this.setChangePatterns();
         this.touchController = new _touchController__WEBPACK_IMPORTED_MODULE_0__["default"](this, document.getElementById('touch_controller'));
@@ -212,17 +270,17 @@ class Snake {
 
     setChangePatterns() {
         this._changePatterns = {
-            up: () => { if (this.dy === 0) 
-                {this.dx = 0; this.dy = -this.engine.grid;} 
+            up: () => { if (this.vector.y === 0) 
+                {this.vector.set(0, -this.engine.grid);} 
             },
-            right: () => { if (this.dx === 0) 
-                {this.dx = this.engine.grid; this.dy = 0;}
+            right: () => { if (this.vector.x === 0) 
+                {this.vector.set(this.engine.grid, 0);}
             },
-            down: () => { if (this.dy === 0) 
-                {this.dx = 0; this.dy = this.engine.grid;}
+            down: () => { if (this.vector.y === 0) 
+                {this.vector.set(0, this.engine.grid);} 
             },
-            left: () => { if (this.dx === 0) 
-                {this.dx = -this.engine.grid; this.dy = 0;}
+            left: () => { if (this.vector.x === 0) 
+                {this.vector.set(-this.engine.grid, 0);}
             },
         };
     }
@@ -231,23 +289,22 @@ class Snake {
 
     move() {
         // Двигаем змейку с нужной скоростью
-        this.x += this.dx;
-        this.y += this.dy;
+        this.headPoint.change(...this.vector.coordinats);
 
         // Если змейка достигла края поля по горизонтали — продолжаем её движение с противоположной строны
-        if (this.x < 0) {
-            this.x = this.engine.canvas.width - this.engine.grid;
+        if (this.headPoint.x < 0) {
+            this.headPoint.x = this.engine.canvas.width - this.engine.grid;
         }
-        else if (this.x >= this.engine.canvas.width) {
-            this.x = 0;
+        else if (this.headPoint.x >= this.engine.canvas.width) {
+            this.headPoint.x = 0;
         }
 
         // Делаем то же самое для движения по вертикали
-        if (this.y < 0) {
-            this.y = this.engine.canvas.height - this.engine.grid;
+        if (this.headPoint.y < 0) {
+            this.headPoint.y = this.engine.canvas.height - this.engine.grid;
         }
-        else if (this.y >= this.engine.canvas.height) {
-            this.y = 0;
+        else if (this.headPoint.y >= this.engine.canvas.height) {
+            this.headPoint.y = 0;
         }
     }
 
@@ -255,7 +312,7 @@ class Snake {
         // Продолжаем двигаться в выбранном направлении. 
         // Голова всегда впереди, поэтому добавляем её координаты в начало массива, 
         // который отвечает за всю змейку
-        this.cells.unshift({x: this.x, y: this.y});
+        this.cells.unshift(this.headPoint.copy());
 
         // Сразу после этого удаляем последний элемент из массива змейки, 
         // потому что она движется и постоянно освобождает клетки после себя
@@ -271,7 +328,7 @@ class Snake {
             // есть ли у нас в массиве змейки две клетки с одинаковыми координатами 
             for (var i = index + 1; i < this.cells.length; i++) {
                 // Если такие клетки есть — начинаем игру заново
-                if (cell.x === this.cells[i].x && cell.y === this.cells[i].y) {
+                if (cell.compare(this.cells[i])) {
                     this.engine.restart();
                 }
             }
