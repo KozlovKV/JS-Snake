@@ -1,6 +1,7 @@
 import Snake from "./snake";
 import Apple from "./apple";
 import RecordTableDB from "./RecordTableDB";
+import ThirdDimField from './thirdDimField';
 
 
 export default class GameEngine {
@@ -11,9 +12,9 @@ export default class GameEngine {
         this.canvas = document.getElementById('game');
         this.context = this.canvas.getContext('2d');
         this.grid = 16;
-
         this.snake = new Snake(this);
         this.apple = new Apple(this);
+        this._3DField = new ThirdDimField(document.getElementById('3d_game_window'), this);
         this.recordsDB = new RecordTableDB('http://localhost:3000/records');
         this.reloadDB();
         this.highscores = [];
@@ -33,10 +34,11 @@ export default class GameEngine {
 
     draw() {
         // Очищаем игровое поле
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.snake.draw();
-        this.apple.draw();
+        this._3DField.draw();
+        // this.snake.draw();
+        // this.apple.draw();
 
         document.getElementById('score').innerText = this.score;
         document.getElementById('fps').innerText = this.fps;
