@@ -1,16 +1,20 @@
+import MultidemensionPoint from "./point";
+
 export default class Apple {
     constructor(engine) { 
         this.engine = engine;
+        this.point = new MultidemensionPoint();
         this.updatePos();
     }
 
     updatePos() {
-        this.x = getRandomInt(0, 25) * this.engine.grid;
-        this.y = getRandomInt(0, 25) * this.engine.grid;
+        let x = getRandomInt(0, 25) * this.engine.grid,
+            y = getRandomInt(0, 25) * this.engine.grid;
+        this.point.set(x, y);
     }
 
     logic() {
-        if (this.engine.snake.x === this.x && this.engine.snake.y === this.y) {
+        if (this.point.compare(this.engine.snake.headPoint)) {
             this.engine.snake.grow();
             this.updatePos();
         }
@@ -18,7 +22,7 @@ export default class Apple {
 
     draw() {
         this.engine.context.fillStyle = 'red';
-        this.engine.context.fillRect(this.x, this.y, this.engine.grid-1, this.engine.grid-1);
+        this.engine.context.fillRect(this.point.x, this.point.y, this.engine.grid-1, this.engine.grid-1);
     }
 }
 
