@@ -19,6 +19,14 @@ export default class MultidemensionPoint {
         this.coordinats[1] = value;
     }
 
+    get z() {
+        return this.coordinats[2];
+    }
+
+    set z(value) {
+        this.coordinats[2] = value;
+    }
+
     set(...coordinats) {
         this.demensions = coordinats.length;
         this.coordinats = coordinats;

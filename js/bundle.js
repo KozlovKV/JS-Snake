@@ -27,12 +27,9 @@ class GameEngine {
         this.fps = fps;
         this.timerId = 0;
         this.score = 0;
-        this.canvas = document.getElementById('game');
-        this.context = this.canvas.getContext('2d');
-        this.grid = 16;
+        this.field = new _thirdDimField__WEBPACK_IMPORTED_MODULE_3__["default"](document.getElementById('3d_game_window'), this);
         this.snake = new _snake__WEBPACK_IMPORTED_MODULE_0__["default"](this);
         this.apple = new _apple__WEBPACK_IMPORTED_MODULE_1__["default"](this);
-        this._3DField = new _thirdDimField__WEBPACK_IMPORTED_MODULE_3__["default"](document.getElementById('game_window'), this);
         this.recordsDB = new _RecordTableDB__WEBPACK_IMPORTED_MODULE_2__["default"]('http://localhost:3000/records');
         this.reloadDB();
         this.highscores = [];
@@ -45,18 +42,19 @@ class GameEngine {
     }
 
     logic() {
-        // this.snake.logic();
-        // this.apple.logic();
-        // this.score = this.snake.cells.length;
+        this.field.logic();
+        this.snake.logic();
+        this.apple.logic();
+        this.score = this.snake.cells.length;
     }
 
     draw() {
         // Очищаем игровое поле
         // this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this._3DField.draw();
-        // this.snake.draw();
-        // this.apple.draw();
+        this.field.draw();
+        this.snake.draw();
+        this.apple.draw();
 
         document.getElementById('score').innerText = this.score;
         document.getElementById('fps').innerText = this.fps;
@@ -88,6 +86,7 @@ class GameEngine {
         this.recordsDB.addRecord(recordObject);
         this.reloadDB();
         this.score = 0;
+        this.field = new _thirdDimField__WEBPACK_IMPORTED_MODULE_3__["default"](document.getElementById('3d_game_window'), this);
         this.snake = new _snake__WEBPACK_IMPORTED_MODULE_0__["default"](this);
         this.apple = new _apple__WEBPACK_IMPORTED_MODULE_1__["default"](this);
     }
@@ -164,9 +163,10 @@ class Apple {
     }
 
     updatePos() {
-        let x = getRandomInt(0, 25) * this.engine.grid,
-            y = getRandomInt(0, 25) * this.engine.grid;
-        this.point.set(x, y);
+        let x = getRandomInt(0, 10) * this.engine.field.grid,
+            y = getRandomInt(0, 10) * this.engine.field.grid,
+            z = getRandomInt(0, 10) * this.engine.field.grid;
+        this.point.set(x, y, z);
     }
 
     logic() {
@@ -177,8 +177,7 @@ class Apple {
     }
 
     draw() {
-        this.engine.context.fillStyle = 'red';
-        this.engine.context.fillRect(this.point.x, this.point.y, this.engine.grid-1, this.engine.grid-1);
+        this.engine.field.changeGameObjectPosition('apple', this.point);
     }
 }
 
@@ -217,6 +216,14 @@ class MultidemensionPoint {
 
     set y(value) {
         this.coordinats[1] = value;
+    }
+
+    get z() {
+        return this.coordinats[2];
+    }
+
+    set z(value) {
+        this.coordinats[2] = value;
     }
 
     set(...coordinats) {
@@ -260,13 +267,13 @@ __webpack_require__.r(__webpack_exports__);
 class Snake {
     constructor(engine) {
         this.engine = engine;
-        this.headPoint = new _point__WEBPACK_IMPORTED_MODULE_1__["default"](160, 160);
+        this.headPoint = new _point__WEBPACK_IMPORTED_MODULE_1__["default"](500, 500, 500);
         this.cells = [];
         this.maxCells = 4;
-        this.vector = new _point__WEBPACK_IMPORTED_MODULE_1__["default"](0, 0);
+        this.vector = new _point__WEBPACK_IMPORTED_MODULE_1__["default"](0, 0, 0);
         this._changePatterns = {};
         this.setChangePatterns();
-        this.touchController = new _touchController__WEBPACK_IMPORTED_MODULE_0__["default"](this, document.getElementById('touch_controller'));
+        // this.touchController = new TouchController(this, document.getElementById('touch_controller'));
         this.setEvents();
         this.changeVelocity('right');
     }
@@ -285,6 +292,12 @@ class Snake {
             left: () => { if (this.vector.x === 0) 
                 {this.vector.set(-this.engine.grid, 0);}
             },
+            in: () => { if (this.vector.z === 0) 
+                {this.vector.set(0, 0, -this.engine.grid);}
+            },
+            out: () => { if (this.vector.z === 0) 
+                {this.vector.set(0, 0, this.engine.grid);}
+            },
         };
     }
 
@@ -296,17 +309,17 @@ class Snake {
 
         // Если змейка достигла края поля по горизонтали — продолжаем её движение с противоположной строны
         if (this.headPoint.x < 0) {
-            this.headPoint.x = this.engine.canvas.width - this.engine.grid;
+            this.headPoint.x = this.engine.field.width - this.engine.field.grid;
         }
-        else if (this.headPoint.x >= this.engine.canvas.width) {
+        else if (this.headPoint.x >= this.engine.field.width) {
             this.headPoint.x = 0;
         }
 
         // Делаем то же самое для движения по вертикали
         if (this.headPoint.y < 0) {
-            this.headPoint.y = this.engine.canvas.height - this.engine.grid;
+            this.headPoint.y = this.engine.field.height - this.engine.field.grid;
         }
-        else if (this.headPoint.y >= this.engine.canvas.height) {
+        else if (this.headPoint.y >= this.engine.field.height) {
             this.headPoint.y = 0;
         }
     }
@@ -345,17 +358,17 @@ class Snake {
     }
 
     draw() {
-        this.engine.context.fillStyle = 'green';
-        this.cells.forEach(cell => {
-            this.engine.context.fillRect(cell.x, cell.y, this.engine.grid-1, this.engine.grid-1);
-        });
+        // this.engine.context.fillStyle = 'green';
+        // this.cells.forEach(cell => {
+        //     this.engine.context.fillRect(cell.x, cell.y, this.engine.grid-1, this.engine.grid-1);
+        // });
     }
 
     setEvents() {
         document.addEventListener('keydown', (e) => {
             this.processKeyDownEvent(e);
         });
-        this.touchController.setEvents();
+        // this.touchController.setEvents();
     }
 
     changeVelocity(direction) {
@@ -392,10 +405,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const basicMaterial = new three__WEBPACK_IMPORTED_MODULE_0__.LineBasicMaterial({
-    color: '#ffffff', opacity: 0.25, transparent: true,
+    color: '#ffffff', opacity: 0.15, transparent: true,
 });
 const borderMeshMaterial = new three__WEBPACK_IMPORTED_MODULE_0__.MeshPhongMaterial({
-    color: '#00ff00', opacity: 0.1, transparent: true,
+    color: '#00ff00', opacity: 0.25, transparent: true,
 });
 
 class ThirdDimField {
@@ -406,7 +419,7 @@ class ThirdDimField {
         this.engine = engine;
         this.scene = new three__WEBPACK_IMPORTED_MODULE_0__.Scene();
         this.camera = new three__WEBPACK_IMPORTED_MODULE_0__.PerspectiveCamera(90, 1, 0.1, 10000);
-        this.camera.position.set(this.width*1.2, this.width*1.1, this.width*0.8);
+        this.camera.position.set(this.width*1.1, this.width*1.2, this.width*1.3);
         this.camera.lookAt(this.width/2, this.width/2, this.width/2);
         this.renderer = new three__WEBPACK_IMPORTED_MODULE_0__.WebGL1Renderer();
         this.renderer.setSize(500, 500);
@@ -418,6 +431,17 @@ class ThirdDimField {
         this.setLines();
         this.setBorders();
         this.setLights();
+        let appleMesh = new three__WEBPACK_IMPORTED_MODULE_0__.Mesh(
+            new three__WEBPACK_IMPORTED_MODULE_0__.BoxGeometry(this.grid, this.grid, this.grid), 
+            new three__WEBPACK_IMPORTED_MODULE_0__.MeshPhongMaterial({'color': '#ff0000'})
+        );
+        this.gameObjects = {
+            'apple': [appleMesh],
+            'snake': [],
+        };
+        for (let key in this.gameObjects) {
+            this.gameObjects[key].forEach(mesh => this.scene.add(mesh));
+        }
     }
     
     setLines() {
@@ -475,29 +499,41 @@ class ThirdDimField {
     setLights() {
         this.lights = [];
         let spotLight1 = new three__WEBPACK_IMPORTED_MODULE_0__.SpotLight('#ffffff');
-        spotLight1.position.set(this.width, this.width, -500);
+        spotLight1.position.set(this.width/2, this.width/2, 0.1*this.width);
         this.scene.add(spotLight1);
         this.lights.push(spotLight1);
         let spotLight2 = new three__WEBPACK_IMPORTED_MODULE_0__.SpotLight('#ffffff');
-        spotLight2.position.set(this.width, this.width, this.width + 500);
+        spotLight2.position.set(this.width/2, this.width/2, 0.9*this.width);
         this.scene.add(spotLight2);
         this.lights.push(spotLight2);
         let spotLight3 = new three__WEBPACK_IMPORTED_MODULE_0__.SpotLight('#ffffff');
-        spotLight3.position.set(this.width, -500, this.width);
+        spotLight3.position.set(this.width/2, 0.1*this.width, this.width/2);
         this.scene.add(spotLight3);
         this.lights.push(spotLight3);
         let spotLight4 = new three__WEBPACK_IMPORTED_MODULE_0__.SpotLight('#ffffff');
-        spotLight4.position.set(this.width, this.width + 500, this.width);
+        spotLight4.position.set(this.width/2, 0.9*this.width, this.width/2);
         this.scene.add(spotLight4);
         this.lights.push(spotLight4);
         let spotLight5 = new three__WEBPACK_IMPORTED_MODULE_0__.SpotLight('#ffffff');
-        spotLight5.position.set(-500, this.width, this.width);
+        spotLight5.position.set(0.1*this.width, this.width/2, this.width/2);
         this.scene.add(spotLight5);
         this.lights.push(spotLight5);
         let spotLight6 = new three__WEBPACK_IMPORTED_MODULE_0__.SpotLight('#ffffff');
-        spotLight6.position.set(this.width + 500, this.width, this.width);
+        spotLight6.position.set(0.9*this.width, this.width/2, this.width/2);
         this.scene.add(spotLight6);
         this.lights.push(spotLight6);
+    }
+
+    addGameObject(objectName, ...data) {
+        data.forEach(value => this.gameObjects[objectName].push(value));
+    }
+
+    changeGameObjectPosition(objectName, ...points) {
+        points.forEach((point, i) => this.gameObjects[objectName][i].position.set(point.x, point.y, point.z));
+    }
+
+    removeGameObject(objectName, start=0, count=1) {
+        this.gameObjects[objectName].splice(start, count);
     }
 
     logic() {

@@ -8,9 +8,10 @@ export default class Apple {
     }
 
     updatePos() {
-        let x = getRandomInt(0, 25) * this.engine.grid,
-            y = getRandomInt(0, 25) * this.engine.grid;
-        this.point.set(x, y);
+        let x = getRandomInt(0, 10) * this.engine.field.grid,
+            y = getRandomInt(0, 10) * this.engine.field.grid,
+            z = getRandomInt(0, 10) * this.engine.field.grid;
+        this.point.set(x, y, z);
     }
 
     logic() {
@@ -21,8 +22,7 @@ export default class Apple {
     }
 
     draw() {
-        this.engine.context.fillStyle = 'red';
-        this.engine.context.fillRect(this.point.x, this.point.y, this.engine.grid-1, this.engine.grid-1);
+        this.engine.field.changeGameObjectPosition('apple', this.point);
     }
 }
 

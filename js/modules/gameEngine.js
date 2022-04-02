@@ -9,12 +9,9 @@ export default class GameEngine {
         this.fps = fps;
         this.timerId = 0;
         this.score = 0;
-        this.canvas = document.getElementById('game');
-        this.context = this.canvas.getContext('2d');
-        this.grid = 16;
+        this.field = new ThirdDimField(document.getElementById('3d_game_window'), this);
         this.snake = new Snake(this);
         this.apple = new Apple(this);
-        this._3DField = new ThirdDimField(document.getElementById('3d_game_window'), this);
         this.recordsDB = new RecordTableDB('http://localhost:3000/records');
         this.reloadDB();
         this.highscores = [];
@@ -27,6 +24,7 @@ export default class GameEngine {
     }
 
     logic() {
+        this.field.logic();
         this.snake.logic();
         this.apple.logic();
         this.score = this.snake.cells.length;
@@ -36,9 +34,13 @@ export default class GameEngine {
         // Очищаем игровое поле
         // this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this._3DField.draw();
+        this.field.draw();
         // this.snake.draw();
-        // this.apple.draw();
+        this.apple.draw();
+
+        // document.addEventListener('click', () => {
+        //     this.apple.updatePos();
+        // });
 
         document.getElementById('score').innerText = this.score;
         document.getElementById('fps').innerText = this.fps;
@@ -70,6 +72,7 @@ export default class GameEngine {
         this.recordsDB.addRecord(recordObject);
         this.reloadDB();
         this.score = 0;
+        this.field = new ThirdDimField(document.getElementById('3d_game_window'), this);
         this.snake = new Snake(this);
         this.apple = new Apple(this);
     }

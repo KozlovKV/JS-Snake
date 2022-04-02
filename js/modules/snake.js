@@ -4,13 +4,13 @@ import MultidemensionPoint from "./point";
 export default class Snake {
     constructor(engine) {
         this.engine = engine;
-        this.headPoint = new MultidemensionPoint(160, 160);
+        this.headPoint = new MultidemensionPoint(500, 500, 500);
         this.cells = [];
         this.maxCells = 4;
-        this.vector = new MultidemensionPoint(0, 0);
+        this.vector = new MultidemensionPoint(0, 0, 0);
         this._changePatterns = {};
         this.setChangePatterns();
-        this.touchController = new TouchController(this, document.getElementById('touch_controller'));
+        // this.touchController = new TouchController(this, document.getElementById('touch_controller'));
         this.setEvents();
         this.changeVelocity('right');
     }
@@ -29,6 +29,12 @@ export default class Snake {
             left: () => { if (this.vector.x === 0) 
                 {this.vector.set(-this.engine.grid, 0);}
             },
+            in: () => { if (this.vector.z === 0) 
+                {this.vector.set(0, 0, -this.engine.grid);}
+            },
+            out: () => { if (this.vector.z === 0) 
+                {this.vector.set(0, 0, this.engine.grid);}
+            },
         };
     }
 
@@ -40,17 +46,17 @@ export default class Snake {
 
         // Если змейка достигла края поля по горизонтали — продолжаем её движение с противоположной строны
         if (this.headPoint.x < 0) {
-            this.headPoint.x = this.engine.canvas.width - this.engine.grid;
+            this.headPoint.x = this.engine.field.width - this.engine.field.grid;
         }
-        else if (this.headPoint.x >= this.engine.canvas.width) {
+        else if (this.headPoint.x >= this.engine.field.width) {
             this.headPoint.x = 0;
         }
 
         // Делаем то же самое для движения по вертикали
         if (this.headPoint.y < 0) {
-            this.headPoint.y = this.engine.canvas.height - this.engine.grid;
+            this.headPoint.y = this.engine.field.height - this.engine.field.grid;
         }
-        else if (this.headPoint.y >= this.engine.canvas.height) {
+        else if (this.headPoint.y >= this.engine.field.height) {
             this.headPoint.y = 0;
         }
     }
@@ -89,17 +95,17 @@ export default class Snake {
     }
 
     draw() {
-        this.engine.context.fillStyle = 'green';
-        this.cells.forEach(cell => {
-            this.engine.context.fillRect(cell.x, cell.y, this.engine.grid-1, this.engine.grid-1);
-        });
+        // this.engine.context.fillStyle = 'green';
+        // this.cells.forEach(cell => {
+        //     this.engine.context.fillRect(cell.x, cell.y, this.engine.grid-1, this.engine.grid-1);
+        // });
     }
 
     setEvents() {
         document.addEventListener('keydown', (e) => {
             this.processKeyDownEvent(e);
         });
-        this.touchController.setEvents();
+        // this.touchController.setEvents();
     }
 
     changeVelocity(direction) {
